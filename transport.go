@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	smux "github.com/libp2p/go-libp2p-core/mux"
+	"github.com/libp2p/go-libp2p-core/network"
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	tpt "github.com/libp2p/go-libp2p-core/transport"
 	ma "github.com/multiformats/go-multiaddr"
@@ -15,14 +15,14 @@ import (
 // Transport is the WebRTC transport.
 type Transport struct {
 	webrtcOptions webrtc.Configuration
-	muxer         smux.Multiplexer
+	muxer         network.Multiplexer
 	localID       peer.ID
 	api           *webrtc.API
 }
 
 // NewTransport creates a WebRTC transport that signals over a direct HTTP connection.
 // It is currently required to provide a muxer.
-func NewTransport(webrtcOptions webrtc.Configuration, muxer smux.Multiplexer) *Transport {
+func NewTransport(webrtcOptions webrtc.Configuration, muxer network.Multiplexer) *Transport {
 	s := webrtc.SettingEngine{}
 	// Use Detach data channels mode
 	s.DetachDataChannels()

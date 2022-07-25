@@ -3,27 +3,27 @@ package main
 import (
 	"bufio"
 	"context"
+	"io/ioutil"
+
 	"crypto/rand"
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	mrand "math/rand"
 
-	golog "github.com/ipfs/go-log"
+	golog "github.com/ipfs/go-log/v2"
 	libp2p "github.com/libp2p/go-libp2p"
 	crypto "github.com/libp2p/go-libp2p-core/crypto"
 	host "github.com/libp2p/go-libp2p-core/host"
 	net "github.com/libp2p/go-libp2p-core/network"
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	pstore "github.com/libp2p/go-libp2p-core/peerstore"
-	ma "github.com/multiformats/go-multiaddr"
-	gologging "github.com/whyrusleeping/go-logging"
-
-	mplex "github.com/libp2p/go-libp2p-mplex"
 	direct "github.com/libp2p/go-libp2p-webrtc-direct"
+	"github.com/libp2p/go-libp2p/p2p/muxer/mplex"
+	ma "github.com/multiformats/go-multiaddr"
 	"github.com/pion/webrtc/v3"
+	gologging "github.com/whyrusleeping/go-logging"
 )
 
 // makeBasicHost creates a LibP2P host with a random peer ID listening on the
@@ -63,7 +63,7 @@ func makeBasicHost(listenPort int, insecure bool, randseed int64) (host.Host, er
 		opts = append(opts, libp2p.NoSecurity)
 	}
 
-	basicHost, err := libp2p.New(context.Background(), opts...)
+	basicHost, err := libp2p.New(opts...)
 	if err != nil {
 		return nil, err
 	}

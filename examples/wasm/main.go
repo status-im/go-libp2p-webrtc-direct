@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	mplex "github.com/libp2p/go-libp2p-mplex"
 	direct "github.com/libp2p/go-libp2p-webrtc-direct"
+	mplex "github.com/libp2p/go-libp2p/p2p/muxer/mplex"
 	ma "github.com/multiformats/go-multiaddr"
 	"github.com/pion/webrtc/v3"
 )
