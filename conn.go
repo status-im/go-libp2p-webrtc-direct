@@ -13,7 +13,7 @@ import (
 	"time"
 
 	ic "github.com/libp2p/go-libp2p-core/crypto"
-	smux "github.com/libp2p/go-libp2p-core/mux"
+	"github.com/libp2p/go-libp2p-core/network"
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	tpt "github.com/libp2p/go-libp2p-core/transport"
 	ma "github.com/multiformats/go-multiaddr"
@@ -24,10 +24,12 @@ import (
 
 type connConfig struct {
 	transport *Transport
-	maAddr    ma.Multiaddr
-	addr      net.Addr
-	isServer  bool
-	remoteID  peer.ID
+	scope     network.ConnManagementScope
+
+	maAddr   ma.Multiaddr
+	addr     net.Addr
+	isServer bool
+	remoteID peer.ID
 }
 
 func newConnConfig(transport *Transport, maAddr ma.Multiaddr, isServer bool) (*connConfig, error) {
@@ -57,7 +59,7 @@ type Conn struct {
 	lock      sync.RWMutex
 	accept    chan chan detachResult
 	isMuxed   bool
-	muxedConn smux.MuxedConn
+	muxedConn network.MuxedConn
 }
 
 func newConn(config *connConfig, pc *webrtc.PeerConnection, initChannel datachannel.ReadWriteCloser) *Conn {
@@ -191,7 +193,7 @@ func (c *Conn) IsClosed() bool {
 }
 
 // OpenStream creates a new stream.
-func (c *Conn) OpenStream(ctx context.Context) (smux.MuxedStream, error) {
+func (c *Conn) OpenStream(ctx context.Context) (network.MuxedStream, error) {
 	muxed, err := c.getMuxed()
 	if err != nil {
 		return nil, err
@@ -235,10 +237,9 @@ func (c *Conn) getPC() (*webrtc.PeerConnection, error) {
 	return pc, nil
 }
 
-func (c *Conn) getMuxed() (smux.MuxedConn, error) {
+func (c *Conn) getMuxed() (network.MuxedConn, error) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-
 	if !c.isMuxed {
 		return nil, nil
 	}
@@ -265,8 +266,8 @@ func (c *Conn) getMuxed() (smux.MuxedConn, error) {
 }
 
 // Note: caller should hold the conn lock.
-func (c *Conn) useMuxer(conn net.Conn, muxer smux.Multiplexer) error {
-	muxed, err := muxer.NewConn(conn, c.config.isServer)
+func (c *Conn) useMuxer(conn net.Conn, muxer network.Multiplexer) error {
+	muxed, err := muxer.NewConn(conn, c.config.isServer, network.NullScope) // TODO: determine which scope to use
 	if err != nil {
 		return err
 	}
@@ -291,7 +292,7 @@ func (c *Conn) checkInitChannel() datachannel.ReadWriteCloser {
 }
 
 // AcceptStream accepts a stream opened by the other side.
-func (c *Conn) AcceptStream() (smux.MuxedStream, error) {
+func (c *Conn) AcceptStream() (network.MuxedStream, error) {
 	muxed, err := c.getMuxed()
 	if err != nil {
 		return nil, err
@@ -361,6 +362,10 @@ func (c *Conn) RemoteMultiaddr() ma.Multiaddr {
 // Transport returns the transport to which this connection belongs.
 func (c *Conn) Transport() tpt.Transport {
 	return c.config.transport
+}
+
+func (c *Conn) Scope() network.ConnScope {
+	return network.NullScope
 }
 
 // Limit message size until we have a better

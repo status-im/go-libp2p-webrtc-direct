@@ -1,18 +1,19 @@
 package libp2pwebrtcdirect
 
 import (
-	"github.com/pion/webrtc/v3"
 	"testing"
 
-	logging "github.com/ipfs/go-log"
+	"github.com/pion/webrtc/v3"
 
-	mplex "github.com/libp2p/go-libp2p-mplex"
-	utils "github.com/libp2p/go-libp2p-testing/suites/transport"
+	logging "github.com/ipfs/go-log/v2"
+
+	mplex "github.com/libp2p/go-libp2p/p2p/muxer/mplex"
+	utils "github.com/libp2p/go-libp2p/p2p/transport/testsuite"
 	ma "github.com/multiformats/go-multiaddr"
 )
 
 func TestTransport(t *testing.T) {
-	t.Skip("This test is failing, see https://github.com/libp2p/go-libp2p-webrtc-direct/issues/37")
+	//t.Skip("This test is failing, see https://github.com/libp2p/go-libp2p-webrtc-direct/issues/37")
 	logging.SetLogLevel("*", "warning")
 
 	ta := NewTransport(
